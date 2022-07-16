@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:practice_bloc_pattern/counter_bloc.dart';
+import 'package:practice_bloc_pattern/counter_event.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,6 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -28,13 +31,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  CounterBloc _bloc = CounterBloc();
 
   @override
   Widget build(BuildContext context) {
@@ -43,24 +40,48 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+          child: StreamBuilder(
+        stream: _bloc.counter,
+        initialData: 0,
+        builder: (context, snapshot) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text(
+                'You have pushed the button this many times:',
+              ),
+              Text(
+                '${snapshot.data}',
+                style: Theme.of(context).textTheme.headline4,
+              ),
+            ],
+          );
+        },
+      )),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () => _bloc.counterEvent.add(DecrementEvent()),
+            tooltip: 'Decrement',
+            child: const Icon(Icons.remove),
+          ),
+          SizedBox(
+            width: 30,
+          ),
+          FloatingActionButton(
+            onPressed: () => _bloc.counterEvent.add(IncrementEvent()),
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _bloc.dispose();
   }
 }
